@@ -1,0 +1,82 @@
+# User module for ahorrin chatbot
+# Eduardo Contreras Chavez - Francisco Ruben Frias Valderrama
+# Verano de investigacion AMC 2018 - Delfin 2018 
+# IIMAS-UNAM Dr. Ivan Vladimir Meza Ruiz
+
+settings:
+    name: Ahorrin
+
+slots:
+    - usuario
+    - objetivo
+    - ingresosM
+    - gastosM
+    - diaT
+    - mesT
+    - añoT
+    - monto
+    - ahorro
+    - esNuevoObjetivo
+    - eslot
+    - montoDiario
+
+plugins:
+    - ahorrindb
+    - ahorrin
+
+strategies:
+    setGoal: 
+        - say "Cual es tu nuevo objetivo de ahorro?"
+        - solve validateRead
+        - ahorrin.setSlot("objetivo",eslot)
+        - say "Tu objetivo va a comenzar hoy"
+        - say "En que mes quieres terminarlo?"
+        - input mesT | asign Enero:1 Febrero:2 Marzo:3 Abril:4 Mayo:5 Junio:6 Julio:7 Agosto:8 Septiembre:9 Octubre:10 Noviembre:11 Diciembre:12 enero:1 febrero:2 marzo:3 abril:4 mayo:5 junio:6 julio:7 agosto:8 septiembre:9 octubre:10 noviembre:11 diciembre:12
+        - while mesT == "None" solve RmesT
+        - say "Que dia del mes quieres terminarlo?"
+        - solve validateRead
+        - ahorrin.setSlot("diaT",eslot)
+        - say "En que año quieres terminarlo?"
+        - solve validateRead
+        - ahorrin.setSlot("añoT",eslot)
+        - ahorrin.say("Cuanto quieres ahorrar para",objetivo)
+        - solve validateRead
+        - ahorrin.setSlot("monto",eslot)
+        - ahorrin.leftNumber(monto,"monto")
+        - say "Perfecto, y cuanto llevas ahorrado para esta meta?" 
+        - solve validateRead
+        - ahorrin.setSlot("ahorro",eslot)
+        - ahorrin.leftNumber(ahorro,"ahorro")
+        - ahorrindb.addGoal(objetivo,usuario,diaT,mesT,añoT,monto,ahorro)
+
+    firstGoal:
+        - say "Ahora vamos a establecer tu primer objetivo!"
+        - solve setGoal
+   
+    newGoal:
+        - say "Ya que termino tu ultimo objetivo vamos a establecer uno nuevo"
+        - solve setGoal
+
+    loadGoal:
+        - set_slot esNuevoObjetivo "no"
+        - ahorrindb.setMonto(usuario,objetivo)
+        - ahorrindb.setAhorro(usuario,objetivo)
+        - ahorrindb.setDiario(usuario,objetivo)
+    
+    validateRead:
+        - input eslot
+        - if eslot == "UNK" say "Lo siento, no entendí lo último que me dijiste, puedes repetírmelo?"
+        - if eslot == "UNK" solve validateRead
+
+    RmesT:
+        - say "Lo siento, no te entendi muy bien, me puedes repetir?"
+        - input mesT | asign Enero:1 Febrero:2 Marzo:3 Abril:4 Mayo:5 Junio:6 Julio:7 Agosto:8 Septiembre:9 Octubre:10 Noviembre:11 Diciembre:12 enero:1 febrero:2 marzo:3 abril:4 mayo:5 junio:6 julio:7 agosto:8 septiembre:9 octubre:10 noviembre:11 diciembre:12
+
+script:
+    - ahorrindb.checkGoal(usuario)
+    - if objetivo == "primero" solve firstGoal
+    - if objetivo == "ninguno" solve newGoal
+    - if objetivo != "primero" and objetivo != "ninguno" solve loadGoal
+#    - input usuario
+#    - ahorrindb.checkUser(usuario)
+#    - if usuario == "nulo" solve setUser

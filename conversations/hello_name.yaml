@@ -1,0 +1,34 @@
+# Conversation example for simple hello and ask a name
+# User module for ahorrin chatbot
+# Eduardo Contreras Chavez - Francisco Ruben Frias Valderrama
+# Verano de investigacion AMC 2018 - Delfin 2018 
+# IIMAS-UNAM Dr. Ivan Vladimir Meza Ruiz
+
+settings:
+    name: HAL
+
+conversations:
+    - 'hello.yaml'
+
+slots:
+    - name
+
+strategies:
+    name:
+        - say "¿cúal es tu nombre?"
+        - input name
+    excelent:
+        - say "me da mucho gusto que estés bien"
+    sorry:
+        - say "siento que no te encuentre bien"
+
+script:
+    - solve hello
+    - say greeting
+    - loop_slots
+    - say "mucho gusto en conocerte {}".format(name)
+    - say "¿como estás hoy?"
+    - input status | asign "bien:good mal:bad"
+    - if status == "good" solve excelent
+    - if status == "bad" solve sorry
+    - say "adios {}".format(name)    

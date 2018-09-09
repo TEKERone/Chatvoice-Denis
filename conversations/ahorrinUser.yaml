@@ -1,0 +1,48 @@
+# User module for ahorrin chatbot
+# Eduardo Contreras Chavez - Francisco Ruben Frias Valderrama
+# Verano de investigacion AMC 2018 - Delfin 2018 
+# IIMAS-UNAM Dr. Ivan Vladimir Meza Ruiz
+
+settings:
+    name: Buscobot
+
+slots:
+    - usuario
+    - ingresosM
+    - gastosM 
+    - eslot
+    - sexo
+
+plugins:
+    - ahorrindb
+    - ahorrin
+    - voiceRecognition
+
+strategies:
+    setUser: 
+        - say "Detecto que es la primera vez que hablamos, me puedes repetir tu nombre?"
+        - solve validateRead
+        - ahorrin.setSlot("usuario",eslot)
+        - ahorrindb.addUser(usuario)
+        - say "Y cuanto ganas al mes?"
+        - solve validateRead
+        - ahorrin.setSlot("ingresosM",eslot)
+        - ahorrindb.setIngresos(ingresosM,usuario)
+        - say "Y cuanto gastas al mes?"
+        - solve validateRead
+        - ahorrin.setSlot("gastosM",eslot)
+        - ahorrindb.setGastos(gastosM,usuario)
+        
+    
+    validateRead:
+        - input eslot
+        - if eslot == "UNK" say "Lo siento, no entendí lo último que me dijiste, puedes repetírmelo?"
+        - if eslot == "UNK" solve validateRead
+   
+script:
+    - say "Cómo te llamas?"
+    - solve validateRead
+    - ahorrin.setSlot("usuario",eslot)
+    - voiceRecognition.recognition()
+    - ahorrindb.checkUser(usuario,sexo)
+    - if usuario == "nulo" solve setUser
